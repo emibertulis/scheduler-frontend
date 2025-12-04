@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const API_BASE = "https://scheduler-backend-qhdh.onrender.com";
+
 function App() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -11,7 +13,7 @@ function App() {
   // Load bookings from backend
   const loadBookings = async () => {
     try {
-      const res = await fetch("https://scheduler-backend-qhdh.onrender.com/bookings");
+      const res = await fetch(`${API_BASE}/bookings`);
       const data = await res.json();
       setBookings(data);
     } catch (err) {
@@ -27,10 +29,9 @@ function App() {
     e.preventDefault();
 
     const bookingData = { name, phone, service, date, time };
-console.log("About to call backend...");
 
     try {
-      const response = await fetch("https://scheduler-backend-qhdh.onrender.com/book", {
+      const response = await fetch(`${API_BASE}/book`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -50,13 +51,37 @@ console.log("About to call backend...");
         setDate("");
         setTime("");
 
-        // Reload bookings list
+        // Reload bookings
         loadBookings();
       } else {
         alert("Something went wrong saving your booking.");
       }
     } catch (error) {
       console.error("Error submitting booking:", error);
+      alert("Cannot reach the server. Is the backend running?");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this booking?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/bookings/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Reload bookings after delete
+        loadBookings();
+      } else {
+        alert("Error deleting booking.");
+      }
+    } catch (err) {
+      console.error("Error deleting booking:", err);
       alert("Cannot reach the server. Is the backend running?");
     }
   };
@@ -220,6 +245,15 @@ console.log("About to call backend...");
                     >
                       Time
                     </th>
+                    <th
+                      style={{
+                        textAlign: "left",
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                      }}
+                    >
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -265,6 +299,27 @@ console.log("About to call backend...");
                       >
                         {b.time}
                       </td>
+                      <td
+                        style={{
+                          borderBottom: "1px solid #f0f0f0",
+                          padding: "8px",
+                        }}
+                      >
+                        <button
+                          onClick={() => handleDelete(b._id)}
+                          style={{
+                            padding: "6px 10px",
+                            background: "#e74c3c",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -278,4 +333,3 @@ console.log("About to call backend...");
 }
 
 export default App;
-
