@@ -10,7 +10,6 @@ function App() {
   const [time, setTime] = useState("");
   const [bookings, setBookings] = useState([]);
 
-  // Load bookings from backend
   const loadBookings = async () => {
     try {
       const res = await fetch(`${API_BASE}/bookings`);
@@ -44,14 +43,12 @@ function App() {
       if (data.success) {
         alert("Booking saved successfully! ✅");
 
-        // Clear the form
         setName("");
         setPhone("");
         setService("");
         setDate("");
         setTime("");
 
-        // Reload bookings
         loadBookings();
       } else {
         alert("Something went wrong saving your booking.");
@@ -75,7 +72,6 @@ function App() {
       const data = await res.json();
 
       if (data.success) {
-        // Reload bookings after delete
         loadBookings();
       } else {
         alert("Error deleting booking.");
@@ -86,248 +82,672 @@ function App() {
     }
   };
 
+  const scrollToDemo = () => {
+    const el = document.getElementById("schedulo-demo");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#f5f5f5",
-        fontFamily: "Arial",
-        padding: "20px",
+        background: "#F3F4F6",
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        color: "#111827",
       }}
     >
-      <div
+      {/* HERO SECTION */}
+      <header
         style={{
-          maxWidth: "900px",
-          margin: "0 auto",
+          background:
+            "linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #8B5CF6 100%)",
+          color: "white",
+          padding: "32px 16px 56px",
         }}
       >
-        {/* Booking form card */}
         <div
           style={{
-            padding: "20px",
-            borderRadius: "10px",
-            background: "white",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            marginBottom: "30px",
+            maxWidth: "960px",
+            margin: "0 auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "24px",
           }}
         >
-          <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-            Book an Appointment
-          </h2>
-
-          <form onSubmit={handleSubmit}>
-            <label>Name</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", margin: "5px 0 10px" }}
-            />
-
-            <label>Phone</label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", margin: "5px 0 10px" }}
-            />
-
-            <label>Service</label>
-            <input
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", margin: "5px 0 10px" }}
-            />
-
-            <label>Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", margin: "5px 0 10px" }}
-            />
-
-            <label>Time</label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", margin: "5px 0 20px" }}
-            />
-
-            <button
-              type="submit"
-              style={{
-                width: "100%",
-                padding: "12px",
-                background: "#4a90e2",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontSize: "16px",
-              }}
-            >
-              Submit Booking
-            </button>
-          </form>
-        </div>
-
-        {/* Bookings list card */}
-        <div
-          style={{
-            padding: "20px",
-            borderRadius: "10px",
-            background: "white",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3 style={{ marginBottom: "15px" }}>All Bookings</h3>
-
-          {bookings.length === 0 ? (
-            <p>No bookings yet.</p>
-          ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table
+          {/* Top bar / logo */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "14px",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "999px",
+                  background: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#2563EB",
+                  fontWeight: 800,
+                  fontSize: "18px",
                 }}
               >
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        borderBottom: "1px solid #ddd",
-                        padding: "8px",
-                      }}
-                    >
-                      Name
-                    </th>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        borderBottom: "1px solid #ddd",
-                        padding: "8px",
-                      }}
-                    >
-                      Phone
-                    </th>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        borderBottom: "1px solid #ddd",
-                        padding: "8px",
-                      }}
-                    >
-                      Service
-                    </th>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        borderBottom: "1px solid #ddd",
-                        padding: "8px",
-                      }}
-                    >
-                      Date
-                    </th>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        borderBottom: "1px solid #ddd",
-                        padding: "8px",
-                      }}
-                    >
-                      Time
-                    </th>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        borderBottom: "1px solid #ddd",
-                        padding: "8px",
-                      }}
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.map((b) => (
-                    <tr key={b._id}>
-                      <td
+                S
+              </div>
+              <span style={{ fontWeight: 700, fontSize: "20px" }}>Schedulo</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                fontSize: "14px",
+                opacity: 0.9,
+              }}
+            >
+              <span>For cleaners</span>
+              <span>For trades</span>
+              <span>For beauty & health</span>
+            </div>
+          </div>
+
+          {/* Hero content */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+          >
+            <div style={{ maxWidth: "560px" }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "4px 10px",
+                  borderRadius: "999px",
+                  background: "rgba(15,23,42,0.35)",
+                  fontSize: "12px",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "999px",
+                    background: "#22C55E",
+                  }}
+                />
+                <span>Live demo • No sign-up needed</span>
+              </div>
+              <h1
+                style={{
+                  fontSize: "32px",
+                  lineHeight: 1.2,
+                  fontWeight: 800,
+                  marginBottom: "12px",
+                }}
+              >
+                Simple online bookings for busy service businesses.
+              </h1>
+              <p
+                style={{
+                  fontSize: "15px",
+                  lineHeight: 1.6,
+                  color: "rgba(249,250,251,0.9)",
+                  marginBottom: "18px",
+                }}
+              >
+                Stop juggling WhatsApp, phone calls and notebooks. Schedulo puts
+                all your appointments in one place and lets your clients book
+                themselves in seconds — from any device, 24/7.
+              </p>
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                <button
+                  onClick={scrollToDemo}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "999px",
+                    border: "none",
+                    background: "white",
+                    color: "#2563EB",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                >
+                  Try Schedulo live
+                </button>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    fontSize: "12px",
+                    opacity: 0.9,
+                  }}
+                >
+                  <span>• No credit card</span>
+                  <span>• Built for local businesses</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick highlights */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                fontSize: "13px",
+              }}
+            >
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "999px",
+                  background: "rgba(15,23,42,0.35)",
+                }}
+              >
+                ✅ Reduce no-shows & confusion
+              </div>
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "999px",
+                  background: "rgba(15,23,42,0.35)",
+                }}
+              >
+                ✅ One place for all appointments
+              </div>
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "999px",
+                  background: "rgba(15,23,42,0.35)",
+                }}
+              >
+                ✅ Clients book 24/7 without calling
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* CONTENT WRAPPER */}
+      <main
+        style={{
+          maxWidth: "960px",
+          margin: "-32px auto 40px",
+          padding: "0 16px 32px",
+        }}
+      >
+        {/* Benefits grid */}
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "16px",
+            marginBottom: "28px",
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "16px",
+              boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+            }}
+          >
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
+              Built for real-world businesses
+            </h3>
+            <p style={{ fontSize: "14px", color: "#4B5563" }}>
+              Perfect for cleaners, mobile mechanics, barbers, lash techs,
+              personal trainers, therapists, handymen and more. If you take
+              bookings, Schedulo fits.
+            </p>
+          </div>
+          <div
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "16px",
+              boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+            }}
+          >
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
+              No more WhatsApp chaos
+            </h3>
+            <p style={{ fontSize: "14px", color: "#4B5563" }}>
+              Replace DMs, calls and scribbled notes with a clean list of
+              upcoming bookings you can access anywhere.
+            </p>
+          </div>
+          <div
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "16px",
+              boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+            }}
+          >
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
+              Simple by design
+            </h3>
+            <p style={{ fontSize: "14px", color: "#4B5563" }}>
+              No complicated dashboards or training needed. If you can use
+              WhatsApp, you can use Schedulo.
+            </p>
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section
+          style={{
+            marginBottom: "32px",
+            background: "white",
+            borderRadius: "12px",
+            padding: "20px",
+            boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              marginBottom: "12px",
+            }}
+          >
+            How Schedulo works
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: "16px",
+              fontSize: "14px",
+              color: "#4B5563",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: "4px",
+                  color: "#2563EB",
+                }}
+              >
+                1. Share your booking link
+              </div>
+              <p>
+                Post it on Instagram, TikTok, your website, business card, or
+                send directly in WhatsApp.
+              </p>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: "4px",
+                  color: "#2563EB",
+                }}
+              >
+                2. Clients book themselves
+              </div>
+              <p>
+                They pick a service, choose a time and leave their details. No
+                back-and-forth messaging.
+              </p>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: "4px",
+                  color: "#2563EB",
+                }}
+              >
+                3. You see everything in one place
+              </div>
+              <p>
+                Open Schedulo and see who&apos;s booked, when, and what they
+                booked — from any device.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* LIVE DEMO SECTION */}
+        <section
+          id="schedulo-demo"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1.2fr)",
+            gap: "20px",
+            alignItems: "flex-start",
+            marginBottom: "32px",
+          }}
+        >
+          {/* Booking form card */}
+          <div
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 12px 30px rgba(15,23,42,0.12)",
+            }}
+          >
+            <h2
+              style={{
+                textAlign: "left",
+                marginBottom: "4px",
+                fontSize: "18px",
+                fontWeight: 700,
+              }}
+            >
+              Try the booking form
+            </h2>
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#6B7280",
+                marginBottom: "14px",
+              }}
+            >
+              This is a live demo. Add a test booking below to see how it appears
+              in the dashboard.
+            </p>
+
+            <form onSubmit={handleSubmit}>
+              <label style={{ fontSize: "13px" }}>Name</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  margin: "5px 0 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #D1D5DB",
+                }}
+              />
+
+              <label style={{ fontSize: "13px" }}>Phone</label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  margin: "5px 0 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #D1D5DB",
+                }}
+              />
+
+              <label style={{ fontSize: "13px" }}>Service</label>
+              <input
+                value={service}
+                onChange={(e) => setService(e.target.value)}
+                placeholder="e.g. Full house clean"
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  margin: "5px 0 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #D1D5DB",
+                }}
+              />
+
+              <label style={{ fontSize: "13px" }}>Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  margin: "5px 0 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #D1D5DB",
+                }}
+              />
+
+              <label style={{ fontSize: "13px" }}>Time</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  margin: "5px 0 16px",
+                  borderRadius: "8px",
+                  border: "1px solid #D1D5DB",
+                }}
+              />
+
+              <button
+                type="submit"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  background: "#2563EB",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "15px",
+                  fontWeight: 600,
+                }}
+              >
+                Submit booking
+              </button>
+            </form>
+          </div>
+
+          {/* Bookings list card */}
+          <div
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 12px 30px rgba(15,23,42,0.12)",
+            }}
+          >
+            <h3
+              style={{
+                marginBottom: "8px",
+                fontSize: "16px",
+                fontWeight: 700,
+              }}
+            >
+              Bookings dashboard
+            </h3>
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#6B7280",
+                marginBottom: "14px",
+              }}
+            >
+              Every time someone books, it appears here. Imagine this filled with
+              your real clients.
+            </p>
+
+            {bookings.length === 0 ? (
+              <p style={{ fontSize: "14px", color: "#4B5563" }}>
+                No bookings yet. Add one using the form.
+              </p>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "13px",
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th
                         style={{
-                          borderBottom: "1px solid #f0f0f0",
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
                           padding: "8px",
                         }}
                       >
-                        {b.name}
-                      </td>
-                      <td
+                        Name
+                      </th>
+                      <th
                         style={{
-                          borderBottom: "1px solid #f0f0f0",
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
                           padding: "8px",
                         }}
                       >
-                        {b.phone}
-                      </td>
-                      <td
+                        Phone
+                      </th>
+                      <th
                         style={{
-                          borderBottom: "1px solid #f0f0f0",
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
                           padding: "8px",
                         }}
                       >
-                        {b.service}
-                      </td>
-                      <td
+                        Service
+                      </th>
+                      <th
                         style={{
-                          borderBottom: "1px solid #f0f0f0",
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
                           padding: "8px",
                         }}
                       >
-                        {b.date}
-                      </td>
-                      <td
+                        Date
+                      </th>
+                      <th
                         style={{
-                          borderBottom: "1px solid #f0f0f0",
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
                           padding: "8px",
                         }}
                       >
-                        {b.time}
-                      </td>
-                      <td
+                        Time
+                      </th>
+                      <th
                         style={{
-                          borderBottom: "1px solid #f0f0f0",
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
                           padding: "8px",
                         }}
                       >
-                        <button
-                          onClick={() => handleDelete(b._id)}
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map((b) => (
+                      <tr key={b._id}>
+                        <td
                           style={{
-                            padding: "6px 10px",
-                            background: "#e74c3c",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px",
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
                           }}
                         >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+                          {b.name}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                          }}
+                        >
+                          {b.phone}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                          }}
+                        >
+                          {b.service}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                          }}
+                        >
+                          {b.date}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                          }}
+                        >
+                          {b.time}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                          }}
+                        >
+                          <button
+                            onClick={() => handleDelete(b._id)}
+                            style={{
+                              padding: "6px 10px",
+                              background: "#EF4444",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Simple CTA footer section */}
+        <section
+          style={{
+            textAlign: "center",
+            fontSize: "14px",
+            color: "#6B7280",
+            marginTop: "12px",
+          }}
+        >
+          <p>
+            Ready to use Schedulo for your own business? This demo is just the
+            start — customise services, add staff, and plug it into your socials.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }
