@@ -126,7 +126,6 @@ function App() {
     setNotes(booking.notes || "");
     setStatus(booking.status || "Pending");
 
-    // If service doesn't match presets, treat as custom
     const presetServices = [
       "Standard Clean",
       "Deep Clean",
@@ -262,8 +261,8 @@ function App() {
               }}
             >
               <span>For cleaners</span>
-              <span>For trades</span>
-              <span>For beauty & health</span>
+              <span>For home services</span>
+              <span>For local businesses</span>
             </div>
           </div>
 
