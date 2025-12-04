@@ -6,9 +6,13 @@ function App() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [service, setService] = useState("");
+  const [customService, setCustomService] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState("Pending");
   const [bookings, setBookings] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   const loadBookings = async () => {
     try {
@@ -24,14 +28,47 @@ function App() {
     loadBookings();
   }, []);
 
+  const scrollToDemo = () => {
+    const el = document.getElementById("schedulo-demo");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const resetForm = () => {
+    setName("");
+    setPhone("");
+    setService("");
+    setCustomService("");
+    setDate("");
+    setTime("");
+    setNotes("");
+    setStatus("Pending");
+    setEditingId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const bookingData = { name, phone, service, date, time };
+    const finalService =
+      service === "custom" ? customService || "Custom service" : service;
+
+    const bookingData = {
+      name,
+      phone,
+      service: finalService,
+      date,
+      time,
+      notes,
+      status,
+    };
 
     try {
-      const response = await fetch(`${API_BASE}/book`, {
-        method: "POST",
+      const url = editingId
+        ? `${API_BASE}/bookings/${editingId}`
+        : `${API_BASE}/book`;
+      const method = editingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -41,14 +78,12 @@ function App() {
       const data = await response.json();
 
       if (data.success) {
-        alert("Booking saved successfully! ✅");
-
-        setName("");
-        setPhone("");
-        setService("");
-        setDate("");
-        setTime("");
-
+        alert(
+          editingId
+            ? "Booking updated successfully! ✅"
+            : "Booking saved successfully! ✅"
+        );
+        resetForm();
         loadBookings();
       } else {
         alert("Something went wrong saving your booking.");
@@ -82,11 +117,84 @@ function App() {
     }
   };
 
-  const scrollToDemo = () => {
-    const el = document.getElementById("schedulo-demo");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+  const handleEdit = (booking) => {
+    setEditingId(booking._id);
+    setName(booking.name);
+    setPhone(booking.phone);
+    setDate(booking.date);
+    setTime(booking.time);
+    setNotes(booking.notes || "");
+    setStatus(booking.status || "Pending");
+
+    // If service doesn't match presets, treat as custom
+    const presetServices = [
+      "Standard Clean",
+      "Deep Clean",
+      "End of Tenancy",
+      "One-off Clean",
+      "Weekly Clean",
+      "Fortnightly Clean",
+      "Garden Work",
+      "Window Cleaning",
+      "Car Valet",
+    ];
+
+    if (presetServices.includes(booking.service)) {
+      setService(booking.service);
+      setCustomService("");
+    } else {
+      setService("custom");
+      setCustomService(booking.service);
     }
+
+    const el = document.getElementById("schedulo-demo");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleToggleStatus = async (booking) => {
+    const newStatus = booking.status === "Confirmed" ? "Pending" : "Confirmed";
+
+    try {
+      const res = await fetch(`${API_BASE}/bookings/${booking._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        loadBookings();
+      } else {
+        alert("Error updating status.");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      alert("Cannot reach the server. Is the backend running?");
+    }
+  };
+
+  const statusBadgeStyle = (statusValue) => {
+    const base = {
+      display: "inline-flex",
+      alignItems: "center",
+      padding: "4px 8px",
+      borderRadius: "999px",
+      fontSize: "11px",
+      fontWeight: 600,
+    };
+    if (statusValue === "Confirmed") {
+      return {
+        ...base,
+        background: "#DCFCE7",
+        color: "#15803D",
+        border: "1px solid #22C55E",
+      };
+    }
+    return {
+      ...base,
+      background: "#FEF3C7",
+      color: "#92400E",
+      border: "1px solid #FACC15",
+    };
   };
 
   return (
@@ -94,7 +202,8 @@ function App() {
       style={{
         minHeight: "100vh",
         background: "#F3F4F6",
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily:
+          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         color: "#111827",
       }}
     >
@@ -236,7 +345,7 @@ function App() {
                   }}
                 >
                   <span>• No credit card</span>
-                  <span>• Built for local businesses</span>
+                  <span>• Built for cleaners & services</span>
                 </div>
               </div>
             </div>
@@ -311,9 +420,9 @@ function App() {
               Built for real-world businesses
             </h3>
             <p style={{ fontSize: "14px", color: "#4B5563" }}>
-              Perfect for cleaners, mobile mechanics, barbers, lash techs,
-              personal trainers, therapists, handymen and more. If you take
-              bookings, Schedulo fits.
+              Perfect for cleaners, mobile mechanics, gardeners, barbers, lash
+              techs, personal trainers, handymen and more. If you take bookings,
+              Schedulo fits.
             </p>
           </div>
           <div
@@ -427,23 +536,15 @@ function App() {
         </section>
 
         {/* LIVE DEMO SECTION */}
-        <section
-          id="schedulo-demo"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1.2fr)",
-            gap: "20px",
-            alignItems: "flex-start",
-            marginBottom: "32px",
-          }}
-        >
-          {/* Booking form card */}
+        <section id="schedulo-demo" style={{ marginBottom: "32px" }}>
+          {/* Booking form card (full width, top) */}
           <div
             style={{
               background: "white",
               borderRadius: "12px",
               padding: "20px",
               boxShadow: "0 12px 30px rgba(15,23,42,0.12)",
+              marginBottom: "20px",
             }}
           >
             <h2
@@ -454,7 +555,7 @@ function App() {
                 fontWeight: 700,
               }}
             >
-              Try the booking form
+              {editingId ? "Edit booking" : "Try the booking form"}
             </h2>
             <p
               style={{
@@ -463,104 +564,217 @@ function App() {
                 marginBottom: "14px",
               }}
             >
-              This is a live demo. Add a test booking below to see how it appears
-              in the dashboard.
+              This is a live demo connected to a real database. Add a test
+              booking below to see how it appears in the dashboard — or click
+              edit on an existing one.
             </p>
 
             <form onSubmit={handleSubmit}>
-              <label style={{ fontSize: "13px" }}>Name</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+              <div
                 style={{
-                  width: "100%",
-                  padding: "10px",
-                  margin: "5px 0 10px",
-                  borderRadius: "8px",
-                  border: "1px solid #D1D5DB",
-                }}
-              />
-
-              <label style={{ fontSize: "13px" }}>Phone</label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  margin: "5px 0 10px",
-                  borderRadius: "8px",
-                  border: "1px solid #D1D5DB",
-                }}
-              />
-
-              <label style={{ fontSize: "13px" }}>Service</label>
-              <input
-                value={service}
-                onChange={(e) => setService(e.target.value)}
-                placeholder="e.g. Full house clean"
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  margin: "5px 0 10px",
-                  borderRadius: "8px",
-                  border: "1px solid #D1D5DB",
-                }}
-              />
-
-              <label style={{ fontSize: "13px" }}>Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  margin: "5px 0 10px",
-                  borderRadius: "8px",
-                  border: "1px solid #D1D5DB",
-                }}
-              />
-
-              <label style={{ fontSize: "13px" }}>Time</label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  margin: "5px 0 16px",
-                  borderRadius: "8px",
-                  border: "1px solid #D1D5DB",
-                }}
-              />
-
-              <button
-                type="submit"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "#2563EB",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontSize: "15px",
-                  fontWeight: 600,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                  gap: "12px 16px",
+                  marginBottom: "12px",
                 }}
               >
-                Submit booking
-              </button>
+                <div>
+                  <label style={{ fontSize: "13px" }}>Name</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      marginTop: "4px",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "13px" }}>Phone</label>
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      marginTop: "4px",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "13px" }}>Service</label>
+                  <select
+                    value={service}
+                    onChange={(e) => setService(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      marginTop: "4px",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                      background: "white",
+                    }}
+                  >
+                    <option value="">Select a service</option>
+                    <option value="Standard Clean">Standard Clean</option>
+                    <option value="Deep Clean">Deep Clean</option>
+                    <option value="End of Tenancy">End of Tenancy</option>
+                    <option value="One-off Clean">One-off Clean</option>
+                    <option value="Weekly Clean">Weekly Clean</option>
+                    <option value="Fortnightly Clean">Fortnightly Clean</option>
+                    <option value="Garden Work">Garden Work</option>
+                    <option value="Window Cleaning">Window Cleaning</option>
+                    <option value="Car Valet">Car Valet</option>
+                    <option value="custom">Custom service…</option>
+                  </select>
+                </div>
+
+                {service === "custom" && (
+                  <div>
+                    <label style={{ fontSize: "13px" }}>Custom service</label>
+                    <input
+                      value={customService}
+                      onChange={(e) => setCustomService(e.target.value)}
+                      placeholder="e.g. Airbnb turnaround"
+                      required
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        marginTop: "4px",
+                        borderRadius: "8px",
+                        border: "1px solid #D1D5DB",
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label style={{ fontSize: "13px" }}>Date</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      marginTop: "4px",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "13px" }}>Time</label>
+                  <input
+                    type="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      marginTop: "4px",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "13px" }}>Status</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      marginTop: "4px",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                      background: "white",
+                    }}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ fontSize: "13px" }}>Notes (optional)</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Address, parking info, gate code, special requests..."
+                  rows={3}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    marginTop: "4px",
+                    borderRadius: "8px",
+                    border: "1px solid #D1D5DB",
+                    resize: "vertical",
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "8px",
+                }}
+              >
+                <button
+                  type="submit"
+                  style={{
+                    padding: "12px 18px",
+                    background: "#2563EB",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                  }}
+                >
+                  {editingId ? "Save changes" : "Submit booking"}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    style={{
+                      padding: "12px 18px",
+                      background: "#E5E7EB",
+                      color: "#111827",
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Cancel edit
+                  </button>
+                )}
+              </div>
             </form>
           </div>
 
-          {/* Bookings list card */}
+          {/* Bookings list card (full width) */}
           <div
             style={{
               background: "white",
@@ -591,7 +805,7 @@ function App() {
 
             {bookings.length === 0 ? (
               <p style={{ fontSize: "14px", color: "#4B5563" }}>
-                No bookings yet. Add one using the form.
+                No bookings yet. Add one using the form above.
               </p>
             ) : (
               <div style={{ overflowX: "auto" }}>
@@ -656,6 +870,25 @@ function App() {
                           padding: "8px",
                         }}
                       >
+                        Status
+                      </th>
+                      <th
+                        style={{
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
+                          padding: "8px",
+                          minWidth: "160px",
+                        }}
+                      >
+                        Notes
+                      </th>
+                      <th
+                        style={{
+                          textAlign: "left",
+                          borderBottom: "1px solid #E5E7EB",
+                          padding: "8px",
+                        }}
+                      >
                         Actions
                       </th>
                     </tr>
@@ -710,19 +943,73 @@ function App() {
                           }}
                         >
                           <button
-                            onClick={() => handleDelete(b._id)}
+                            type="button"
+                            onClick={() => handleToggleStatus(b)}
                             style={{
-                              padding: "6px 10px",
-                              background: "#EF4444",
-                              color: "white",
+                              background: "transparent",
                               border: "none",
-                              borderRadius: "6px",
+                              padding: 0,
                               cursor: "pointer",
-                              fontSize: "12px",
                             }}
                           >
-                            Delete
+                            <span style={statusBadgeStyle(b.status || "Pending")}>
+                              {b.status || "Pending"}
+                            </span>
                           </button>
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                            whiteSpace: "pre-wrap",
+                          }}
+                        >
+                          {b.notes || (
+                            <span style={{ color: "#9CA3AF" }}>No notes</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            borderBottom: "1px solid #F3F4F6",
+                            padding: "8px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "6px",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <button
+                              onClick={() => handleEdit(b)}
+                              style={{
+                                padding: "6px 10px",
+                                background: "#E5E7EB",
+                                color: "#111827",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(b._id)}
+                              style={{
+                                padding: "6px 10px",
+                                background: "#EF4444",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
